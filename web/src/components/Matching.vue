@@ -74,8 +74,8 @@ const click_match_btn = () => {
 
 const refresh_bots = async () => {
   const { data } = await getBotList({ page: 0, limit: 10 });
-  const { list } = data;
-  const t = list.map((bot) => {
+  const { content } = data;
+  const t = content.map((bot) => {
     return {
       value: bot.id,
       label: bot.title,

@@ -95,7 +95,7 @@ function handleWatchVideotape(recordId) {
   store.commit("updateIsRecording", true);
   for (let record of listData.value) {
     if (record.id === recordId) {
-      store.commit("updateGame", {
+      let game = {
         map: stringTo2D(record.map),
         a_id: record.aId,
         b_id: record.bId,
@@ -103,13 +103,18 @@ function handleWatchVideotape(recordId) {
         a_sy: record.aSy,
         b_sx: record.bSx,
         b_sy: record.bSy,
-      });
+      }
+      store.commit("updateGame", game);
       store.commit("updateRecordLoser", record.loser);
-
-      store.commit("updateSteps", {
+      let steps = {
         a_steps: record.aSteps,
         b_steps: record.bSteps,
-      });
+      }
+      store.commit("updateSteps", steps);
+      localStorage.setItem('game', JSON.stringify(game))
+      localStorage.setItem('recordLoser', JSON.stringify(record.loser))
+      localStorage.setItem('steps', JSON.stringify(steps))
+      
       break;
     }
   }

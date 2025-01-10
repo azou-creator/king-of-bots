@@ -1,3 +1,4 @@
+
 export default {
   state: {
     is_recording: false,
@@ -5,7 +6,9 @@ export default {
     b_steps: "",
     record_loser: "none",
   },
-  getters: {},
+  getters: {
+    
+  },
   mutations: {
     updateIsRecording(state, is_recording) {
       state.is_recording = is_recording;
@@ -16,7 +19,7 @@ export default {
     },
     updateRecordLoser(state, record_loser) {
       state.record_loser = record_loser;
-    }
+    },
   },
   actions: {},
 };

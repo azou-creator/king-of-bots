@@ -1,8 +1,8 @@
-import Cell from "./Cell.js";
 import GameObject from "./GameObject.js";
 import Snake from "./Snake.js";
 import Wall from "./Wall.js";
 import { store } from "@/store";
+import { useRouter } from "vue-router";
 
 // 游戏地图对象
 export default class GameMap extends GameObject {
@@ -33,11 +33,21 @@ export default class GameMap extends GameObject {
 
   add_event_listener() {
     // 判断是否是录像
-    if (store.state.record.is_recording) {
+    const isRecording = () => {
+      const router = useRouter();
+      return (
+        router.currentRoute.value.path.includes("videotape") ||
+        store.state.record.is_recording
+      );
+    };
+    if (isRecording()) {
       const [snake0, snake1] = this.snakes;
-      const a_steps = store.state.record.a_steps;
-      const b_steps = store.state.record.b_steps;
-      const loser = store.state.record.record_loser;
+      
+      const a_steps = store.state.record.a_steps || JSON.parse(localStorage.getItem('steps')).a_steps;
+      const b_steps = store.state.record.b_steps || JSON.parse(localStorage.getItem('steps')).b_steps;
+      
+      const loser = (store.state.record.record_loser === 'none' ? false : store.state.record.record_loser ) || JSON.parse(localStorage.getItem('recordLoser'));
+      
       let k = 0;
       const timer = setInterval(() => {
         if (k >= a_steps.length - 1) {
@@ -154,7 +164,10 @@ export default class GameMap extends GameObject {
   }
 
   create_wall() {
-    const g = store.state.pk.map;
+    let g = store.state.pk.map;
+    if (!g)
+      store.commit("updateGame", JSON.parse(localStorage.getItem("game")));
+    g = store.state.pk.map;
     if (g[11][1] == 1) g[11][1] = 0;
     for (let i = 0; i < this.rows; i++)
       for (let j = 0; j < this.cols; j++)
