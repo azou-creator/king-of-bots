@@ -8,18 +8,18 @@ import com.kob.backend.common.Constants;
 import com.kob.backend.common.JwtUtil;
 import com.kob.backend.entity.Bot;
 import com.kob.backend.entity.User;
-import com.kob.backend.mapper.BotMapper;
-import com.kob.backend.mapper.RecordMapper;
-import com.kob.backend.mapper.UserMapper;
+import com.kob.backend.repository.BotRepository;
+import com.kob.backend.repository.RecordRepository;
+import com.kob.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import javax.websocket.*;
-import javax.websocket.server.PathParam;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.websocket.*;
+import jakarta.websocket.server.PathParam;
+import jakarta.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,27 +35,27 @@ public class WebSocketServer {
 
     private User user;
 
-    public static UserMapper userMapper;
+    public static UserRepository userRepository;
 
     public Game game = null;
 
     @Autowired
-    public void setUserMapper(UserMapper userMapper) {
-        WebSocketServer.userMapper = userMapper;
+    public void setUserMapper(UserRepository userRepository) {
+        WebSocketServer.userRepository = userRepository;
     }
 
-    public static RecordMapper recordMapper;
+    public static RecordRepository recordRepository;
 
     @Autowired
-    public void setRecordMapper(RecordMapper recordMapper) {
-        WebSocketServer.recordMapper = recordMapper;
+    public void setRecordMapper(RecordRepository recordRepository) {
+        WebSocketServer.recordRepository = recordRepository;
     }
 
-    private static BotMapper botMapper;
+    private static BotRepository botRepository;
 
     @Autowired
-    public void setBotMapper(BotMapper botMapper) {
-        WebSocketServer.botMapper = botMapper;
+    public void setBotMapper(BotRepository botRepository) {
+        WebSocketServer.botRepository = botRepository;
     }
 
     public static RestTemplate restTemplate;
@@ -73,7 +73,7 @@ public class WebSocketServer {
         this.session = session;
         System.out.println("建立连接");
         Long userId = JwtUtil.getSubject(token);
-        this.user = userMapper.selectById(userId);
+        this.user = userRepository.findById(userId).orElse(null);
 
         if (ObjectUtil.isNotNull(this.user)) {
             users.put(userId, this);
@@ -140,10 +140,10 @@ public class WebSocketServer {
         }
     }
 
-    public static void startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId) {
-        User user1 = userMapper.selectById(aId), user2 = userMapper.selectById(bId);
+    public static void startGame(Long aId, Long aBotId, Long bId, Long bBotId) {
+        User user1 = userRepository.findById(aId).orElse(null), user2 = userRepository.findById(bId).orElse(null);
 
-        Bot aBot = botMapper.selectById(aBotId), bBot = botMapper.selectById(bBotId);
+        Bot aBot = botRepository.findById(aBotId).orElse(null), bBot = botRepository.findById(bBotId).orElse(null);
 
         Game game = new Game(13, 14, user1.getId(), aBot, user2.getId(), bBot);
         int[][] map = game.generate();

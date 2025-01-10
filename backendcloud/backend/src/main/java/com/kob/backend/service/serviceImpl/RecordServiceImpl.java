@@ -2,46 +2,46 @@ package com.kob.backend.service.serviceImpl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.kob.backend.common.PageUtils;
-import com.kob.backend.common.Query;
 import com.kob.backend.dto.RecordDTO;
 import com.kob.backend.entity.Record;
 import com.kob.backend.entity.User;
-import com.kob.backend.mapper.RecordMapper;
+import com.kob.backend.repository.RecordRepository;
 import com.kob.backend.service.IRecordService;
 import com.kob.backend.service.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> implements IRecordService {
+public class RecordServiceImpl implements IRecordService {
 
     @Resource
     private IUserService userService;
 
+    @Resource
+    private RecordRepository recordRepository;
+
     @Override
     public JSONObject pageList(Map<String, Object> params) {
-        LambdaQueryWrapper<Record> lqw = new LambdaQueryWrapper<>();
-        lqw.orderByDesc(Record::getCreateTime);
+        int page = (int) params.getOrDefault("page", 1);
+        int size = (int) params.getOrDefault("size", 10);
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
 
-        IPage<Record> page = this.page(new Query<Record>().getPage(params), lqw);
+        Page<Record> recordPage = recordRepository.findAll(pageRequest);
 
         JSONObject jsonObject = new JSONObject();
-        PageUtils<Record> pageUtils = new PageUtils<>(page);
-        jsonObject.putOpt("currPage", pageUtils.getCurrPage());
-        jsonObject.putOpt("pageSize", pageUtils.getPageSize());
-        jsonObject.putOpt("totalPage", pageUtils.getTotalPage());
-        jsonObject.putOpt("totalCount", pageUtils.getTotalCount());
+        jsonObject.putOpt("currPage", recordPage.getNumber() + 1);
+        jsonObject.putOpt("pageSize", recordPage.getSize());
+        jsonObject.putOpt("totalPage", recordPage.getTotalPages());
+        jsonObject.putOpt("totalCount", recordPage.getTotalElements());
 
-        List<Record> list = pageUtils.getList();
+        List<Record> list = recordPage.getContent();
         List<RecordDTO> recordDTOList = new ArrayList<>();
         for (Record record : list) {
             User userA = userService.getById(record.getAId());

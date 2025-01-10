@@ -7,16 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="botruningsystem" />
-        <module name="backend" />
-        <module name="matchingsystem" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="backend" target="1.8" />
-      <module name="backendcloud" target="1.8" />
-      <module name="botruningsystem" target="1.8" />
-      <module name="matchingsystem" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

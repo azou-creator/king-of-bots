@@ -1,16 +1,20 @@
 package com.kob.backend.entity;
 
 
-import com.baomidou.mybatisplus.annotation.*;
+import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.util.Date;
 
-@TableName("user")
 @Data
+@Entity
+@Table(name = "user")
 public class User {
 
-    @TableId
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
@@ -19,16 +23,14 @@ public class User {
 
     private String avatar;
 
-    @TableField(fill = FieldFill.INSERT)
     private Integer rating;
 
-    @TableField(value = "createTime", fill = FieldFill.INSERT)
+    @CreatedDate
     private Date createTime;
 
-    @TableField(value = "updateTime", fill = FieldFill.INSERT_UPDATE)
+    @LastModifiedDate
     private Date updateTime;
 
-    @TableField(value = "logic", fill = FieldFill.INSERT)
     private Integer logic;
 
 }

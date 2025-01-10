@@ -11,7 +11,7 @@ public class StartGameServiceImpl implements StartGameService {
     Log log = Log.get();
 
     @Override
-    public String startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId) {
+    public String startGame(Long aId, Long aBotId, Long bId, Long bBotId) {
         WebSocketServer.startGame(aId, aBotId, bId, bBotId);
         return null;
     }

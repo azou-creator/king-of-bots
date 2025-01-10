@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/backendcloud/backend/backend.iml" filepath="$PROJECT_DIR$/backendcloud/backend/backend.iml" />
-      <module fileurl="file://$PROJECT_DIR$/backendcloud/backendcloud.iml" filepath="$PROJECT_DIR$/backendcloud/backendcloud.iml" />
-      <module fileurl="file://$PROJECT_DIR$/backendcloud/botruningsystem/botruningsystem.iml" filepath="$PROJECT_DIR$/backendcloud/botruningsystem/botruningsystem.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/king-of-bots.iml" filepath="$PROJECT_DIR$/.idea/king-of-bots.iml" />
-      <module fileurl="file://$PROJECT_DIR$/backendcloud/matchingsystem/matchingsystem.iml" filepath="$PROJECT_DIR$/backendcloud/matchingsystem/matchingsystem.iml" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,5 @@
 package com.kob.backend.comsumer;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONObject;
@@ -199,8 +198,11 @@ public class Game extends Thread {
     }
 
     private void saveToDB() {
-        Integer ratingA = WebSocketServer.userMapper.selectById(playerA.getId()).getRating();
-        Integer ratingB = WebSocketServer.userMapper.selectById(playerB.getId()).getRating();
+        User userA = WebSocketServer.userRepository.findById(playerA.getId()).orElse(null);
+        User userB = WebSocketServer.userRepository.findById(playerB.getId()).orElse(null);
+
+        Integer ratingA = userA != null ? userA.getRating() : 0;
+        Integer ratingB = userB != null ? userB.getRating() : 0;
         // 平局分数不变
         if (Constants.PLAYER_A.equals(loser)) {
             ratingA -= 2;
@@ -226,13 +228,15 @@ public class Game extends Thread {
                 loser,
                 new Date()
         );
-        WebSocketServer.recordMapper.insert(record);
+        WebSocketServer.recordRepository.save(record);
     }
 
     private void updateRating(Player player, Integer rating) {
-        User user = WebSocketServer.userMapper.selectById(player.getId());
-        user.setRating(rating);
-        WebSocketServer.userMapper.updateById(user);
+        User user = WebSocketServer.userRepository.findById(player.getId()).orElse(null);
+        if (null != user) {
+            user.setRating(rating);
+            WebSocketServer.userRepository.save(user);
+        }
     }
 
     private String getMapString() {

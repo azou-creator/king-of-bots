@@ -2,8 +2,7 @@ package com.kob.backend.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.hutool.log.Log;
 import com.kob.backend.common.PageUtils;
 import com.kob.backend.common.Query;
 import com.kob.backend.common.R;
@@ -15,9 +14,11 @@ import com.kob.backend.entity.Bot;
 import com.kob.backend.entity.User;
 import com.kob.backend.service.IBotService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,19 +45,18 @@ public class BotController {
 
 
     @DeleteMapping("/remove/{id}")
-    public R<String> remove(@PathVariable Integer id) {
+    public R<String> remove(@PathVariable Long id) {
         User user = SecurityUtils.getUser();
         Bot bot = botService.getById(id);
         if (!ObjectUtil.equal(bot.getUserId(), user.getId())) {
             return R.fail("没有操作权限");
         }
-        boolean b = botService.removeById(id);
+        boolean b = botService.deleteById(id);
         if (b) {
             return R.ok("删除成功");
         } else {
             return R.fail("删除失败");
         }
-
     }
 
 
@@ -72,16 +72,13 @@ public class BotController {
     }
 
     @GetMapping("/list")
-    public R<PageUtils<Bot>> list(@RequestParam Map<String, Object> params) {
-        LambdaQueryWrapper<Bot> lqw = new LambdaQueryWrapper<>();
-        if (ObjectUtil.isNotNull(params.get("title"))) {
-            lqw.like(Bot::getTitle, params.get("title"));
-        }
-        User user = SecurityUtils.getUser();
-        Long id = user.getId();
-        lqw.eq(Bot::getUserId, id);
-        IPage<Bot> page = botService.page(new Query<Bot>().getPage(params), lqw);
-        return R.ok(new PageUtils<>(page));
+    public R<Page<Bot>> list(@RequestParam Map<String, Object> params) {
+        Page<Bot> page = botService.page(params);
+        int size = page.getSize();
+        int number = page.getNumber();
+        List<Bot> content = page.getContent();
+        Log.get().info("size: {}, number: {}, content: {}", size, number, content);
+        return R.ok(page);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.kob.backend.common;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.Data;
+import org.springframework.data.domain.Page;
 
 import java.io.Serializable;
 import java.util.List;
@@ -51,11 +51,11 @@ public class PageUtils<T> implements Serializable {
     /**
      * 分页
      */
-    public PageUtils(IPage<T> page) {
-        this.list = page.getRecords();
-        this.totalCount = (int) page.getTotal();
-        this.pageSize = (int) page.getSize();
-        this.currPage = (int) page.getCurrent();
-        this.totalPage = (int) page.getPages();
+    public PageUtils(Page<T> page) {
+        this.list = page.getContent();
+        this.totalCount = (int) page.getTotalElements();
+        this.pageSize = page.getSize();
+        this.currPage = page.getNumber();
+        this.totalPage = page.getTotalPages();
     }
 }

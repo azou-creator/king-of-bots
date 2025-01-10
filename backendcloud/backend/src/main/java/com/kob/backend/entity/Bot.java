@@ -1,21 +1,21 @@
 package com.kob.backend.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import jakarta.persistence.*;
 import java.util.Date;
 
-@TableName("bot")
 @Data
+@Entity
+@Table(name = "bot")
 public class Bot {
 
-    @TableId
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @TableField("user_id")
     private Long userId;
 
     private String title;
@@ -24,13 +24,12 @@ public class Bot {
 
     private String content;
 
-    @TableField(value = "createTime", fill = FieldFill.INSERT)
+    @CreatedDate
     private Date createTime;
 
-    @TableField(value = "updateTime", fill = FieldFill.INSERT_UPDATE)
+    @LastModifiedDate
     private Date updateTime;
 
-    @TableField(value = "logic", fill = FieldFill.INSERT)
     private Integer logic;
 
 }

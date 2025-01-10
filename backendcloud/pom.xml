@@ -16,14 +16,15 @@
     <packaging>pom</packaging>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>18</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>2.7.4</spring-boot.version>
-        <spring-cloud.version>2021.0.3</spring-cloud.version>
+        <spring-boot.version>3.1.12</spring-boot.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
         <hutool.version>5.8.8</hutool.version>
-        <security.version>2.7.4</security.version>
+        <security.version>3.1.4</security.version>
         <joor.version>0.9.14</joor.version>
+        <lombok.version>1.18.34</lombok.version>
     </properties>
 
 
@@ -55,10 +56,28 @@
                 <version>${security.version}</version>
             </dependency>
 
+            <!--JPA数据库相关-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-jpa</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <scope>runtime</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.jooq</groupId>
                 <artifactId>joor-java-8</artifactId>
                 <version>${joor.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <optional>true</optional>
             </dependency>
         </dependencies>
 

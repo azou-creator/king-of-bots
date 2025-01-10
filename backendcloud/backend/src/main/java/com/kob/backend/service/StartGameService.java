@@ -2,5 +2,5 @@ package com.kob.backend.service;
 
 public interface StartGameService {
 
-    String startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId);
+    String startGame(Long aId, Long aBotId, Long bId, Long bBotId);
 }

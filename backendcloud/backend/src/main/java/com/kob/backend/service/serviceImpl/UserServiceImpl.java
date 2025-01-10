@@ -3,36 +3,40 @@ package com.kob.backend.service.serviceImpl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import cn.hutool.log.Log;
 import com.kob.backend.common.JwtUtil;
 import com.kob.backend.dto.UserParam;
 import com.kob.backend.entity.User;
 import com.kob.backend.entity.UserDetailsImpl;
-import com.kob.backend.mapper.UserMapper;
+import com.kob.backend.repository.UserRepository;
 import com.kob.backend.service.IUserService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+public class UserServiceImpl implements IUserService {
 
-    @Autowired
+    @Resource
     private AuthenticationManager authenticationManager;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
+
+    @Resource
+    private UserRepository userRepository;
+
+    private final Log log = Log.get(this.getClass());
 
     public Map<String, String> login(UserParam userParam) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
@@ -51,18 +55,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
 
-    @Transactional
     public Map<String, String> register(UserParam userParam) {
         if (StrUtil.hasBlank(userParam.getUsername(), userParam.getPassword(), userParam.getConfirmPassword())) {
-            throw new RuntimeException("用户名或密码不能为空");
+            throw new IllegalArgumentException("用户名或密码不能为空");
         }
         if (!StrUtil.equals(userParam.getPassword(), userParam.getConfirmPassword())) {
-            throw new RuntimeException("两次密码不一致");
+            throw new IllegalArgumentException("两次密码不一致");
         }
         // 判断用户名是否存在
-        LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<>();
-        lqw.eq(User::getUsername, userParam.getUsername());
-        List<User> users = this.list(lqw);
+        List<User> users = userRepository.findByUsername(userParam.getUsername());
+
         HashMap<String, String> res = new HashMap<>();
         if (!users.isEmpty()) {
             res.put("msg", "用户名已存在");
@@ -71,11 +73,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = BeanUtil.copyProperties(userParam, User.class);
         String encode = passwordEncoder.encode(userParam.getPassword());
         user.setPassword(encode);
-        boolean save = this.save(user);
-        if (save)
+        log.info(user.toString());
+        try {
+            userRepository.saveAndFlush(user);
             res.put("msg", "注册成功");
-        else
+        } catch (DataAccessException e) {
+            log.error(e);
             res.put("msg", "注册失败");
+        }
         return res;
     }
 
@@ -86,6 +91,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         UserDetailsImpl userDetails = (UserDetailsImpl) authenticationToken.getPrincipal();
 
         return userDetails.getUser();
+    }
+
+    @Override
+    public User getById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
 
