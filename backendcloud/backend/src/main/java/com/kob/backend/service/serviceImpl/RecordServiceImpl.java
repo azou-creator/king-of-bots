@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,8 @@ public class RecordServiceImpl implements IRecordService {
 
     @Override
     public JSONObject pageList(Map<String, Object> params) {
-        int page = (int) params.getOrDefault("page", 1);
-        int size = (int) params.getOrDefault("size", 10);
+        int page = Integer.parseInt(params.getOrDefault("page", 1).toString());
+        int size = Integer.parseInt(params.getOrDefault("size", 10).toString());
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
 
         Page<Record> recordPage = recordRepository.findAll(pageRequest);

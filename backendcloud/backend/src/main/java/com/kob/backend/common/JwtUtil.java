@@ -6,6 +6,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -14,10 +16,20 @@ import java.util.Base64;
 import java.util.Date;
 
 @Component
+@ConfigurationProperties(prefix = "jwt")
 public class JwtUtil {
 
-    public static final long JWT_TTL = 60 * 60 * 1000L * 24 * 14;  // 有效期14天
-    public static final String JWT_KEY = "SDFGjhdsfalshdfHFdsjkdsfds121232131afasdfac";
+    public static long expire;
+
+    public void setExpire(long expire) {
+        JwtUtil.expire = expire;
+    }
+
+    public static String key;
+
+    public void setKey(String key) {
+        JwtUtil.key = key;
+    }
 
     public static String getUUID() {
         return UUID.randomUUID().toString().replaceAll("-", "");
@@ -34,7 +46,7 @@ public class JwtUtil {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
         if (ttlMillis == null) {
-            ttlMillis = JwtUtil.JWT_TTL;
+            ttlMillis = expire;
         }
 
         long expMillis = nowMillis + ttlMillis;
@@ -49,7 +61,7 @@ public class JwtUtil {
     }
 
     public static SecretKey generalKey() {
-        byte[] encodeKey = Base64.getDecoder().decode(JwtUtil.JWT_KEY);
+        byte[] encodeKey = Base64.getDecoder().decode(JwtUtil.key);
         return new SecretKeySpec(encodeKey, 0, encodeKey.length, "HmacSHA256");
     }
 
@@ -62,11 +74,11 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public static Long getSubject(String jwt)  {
+    public static Long getSubject(String jwt) {
         long id = -1L;
         try {
             id = Long.parseLong(parseJWT(jwt).getSubject());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return id;

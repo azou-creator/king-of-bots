@@ -1,6 +1,7 @@
 package com.kob.backend.config;
 
 import com.kob.backend.filter.JwtAuthenticationTokenFilter;
+import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,7 +27,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity() //开启权限注解,默认是关闭的
 public class SecurityConfig {
 
-    @Autowired
+    @Resource
     private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
 
     @Bean

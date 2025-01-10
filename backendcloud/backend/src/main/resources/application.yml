@@ -1,12 +1,16 @@
 server:
   port: 8080
 
+jwt:
+  key: SDFGjhdsfalshdfHFdsjkdsfds121232131afasdfac
+  expire: 604800000   # 7天
+
 spring:
   thymeleaf:
     cache: false
   datasource:
-    username: hyt
-    password: heyutang333
+    username: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/kob?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     type: com.zaxxer.hikari.HikariDataSource
@@ -31,3 +35,5 @@ spring:
     show-sql: true
     properties:
       hibernate.hibernate.hbm2ddl.auto: update
+      hibernate:
+        format_sql: true

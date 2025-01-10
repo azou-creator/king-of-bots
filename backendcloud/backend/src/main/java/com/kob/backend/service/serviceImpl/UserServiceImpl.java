@@ -11,7 +11,6 @@ import com.kob.backend.entity.UserDetailsImpl;
 import com.kob.backend.repository.UserRepository;
 import com.kob.backend.service.IUserService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
