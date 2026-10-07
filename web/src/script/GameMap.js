@@ -151,9 +151,9 @@ export default class GameMap extends GameObject {
   }
 
   render() {
-    // 渲染网格矩形地图
-    const even_color = "rgb(171, 214, 83)";
-    const odd_color = "rgb(173, 228, 87)";
+    // 渲染网格矩形地图,双色调棋盘格降低饱和度,与整体界面更协调
+    const even_color = "#aad751";
+    const odd_color = "#a2d149";
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {

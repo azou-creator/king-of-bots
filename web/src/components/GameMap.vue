@@ -20,11 +20,17 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+/* 地图为 13 行 x 14 列,用 aspect-ratio 让画布随宽度等比缩放 */
 .gameMap {
-  height: 100%;
   width: 100%;
+  aspect-ratio: 14 / 13;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  canvas {
+    border-radius: 8px;
+    outline: none;
+  }
 }
 </style>

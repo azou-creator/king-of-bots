@@ -1,28 +1,25 @@
 <template>
-  <play-ground v-if="$store.state.pk.status === 'playing'" />
-  <matching v-else />
-  <result-board v-if="$store.state.pk.loser != 'none'" />
-  <a-alert
-    class="pk-info"
-    v-if="$store.state.pk.status === 'playing'"
-    :message="
-      parseInt($store.state.user.id) === $store.state.pk.a_id
-        ? '你是蓝色方'
-        : '你是红色方'
-    "
-    type="info"
-    show-icon
-    :banner="true"
-    :closable="true"
-  />
+  <div class="pk-page">
+    <play-ground v-if="$store.state.pk.status === 'playing'" />
+    <matching v-else />
+    <result-board v-if="$store.state.pk.loser != 'none'" />
+
+    <!-- 对局中的阵营提示 + 操作说明,顶部居中悬浮 -->
+    <div class="pk-turn-chip" v-if="$store.state.pk.status === 'playing'">
+      <span class="dot" :class="isBlue ? 'blue' : 'red'"></span>
+      <span>{{ isBlue ? "你是蓝方" : "你是红方" }}</span>
+      <span class="divider"></span>
+      <span class="hint">WASD / 方向键 控制移动</span>
+    </div>
+  </div>
 </template>
 
 <script setup>
+import { computed, onMounted, onUnmounted } from "vue";
+import { useStore } from "vuex";
 import ResultBoard from "@/components/ResultBoard.vue";
 import PlayGround from "@/components/PlayGround.vue";
 import Matching from "@/components/Matching.vue";
-import { onMounted, onUnmounted } from "vue";
-import { useStore } from "vuex";
 import {
   START_MATCH,
   STOP_MATCH,
@@ -35,6 +32,10 @@ const store = useStore();
 const socketUrl = `ws://localhost:8080/websocket/${store.state.user.token}`;
 let socket = null;
 
+const isBlue = computed(
+  () => parseInt(store.state.user.id) === store.state.pk.a_id
+);
+
 store.commit("updateLoser", "none");
 
 onMounted(() => {
@@ -44,9 +45,10 @@ onMounted(() => {
       "https://cdn.acwing.com/media/article/image/2022/08/09/1_1db2488f17-anonymous.png",
   });
   socket = new WebSocket(socketUrl);
+  // 提前挂到 store，Matching 组件通过 readyState 判断是否可发送
+  store.commit("updateSocket", socket);
   socket.onopen = () => {
     console.log("websocket open");
-    store.commit("updateSocket", socket);
   };
 
   socket.onmessage = (e) => {
@@ -83,15 +85,68 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  socket.close();
+  if (socket) {
+    socket.onclose = null; // 卸载触发的 close 不再重置 store 状态
+    socket.close();
+  }
+  store.commit("updateSocket", null);
 });
 </script>
 
 <style lang="scss" scoped>
-.pk-info {
-  position: absolute;
-  top: 5%;
-  left: 38%;
-  width: 400px;
+.pk-turn-chip {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--kob-glass-dark);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: var(--kob-shadow-sm);
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.blue {
+      background: var(--kob-a);
+      box-shadow: 0 0 6px rgba(77, 114, 230, 0.9);
+    }
+
+    &.red {
+      background: var(--kob-b);
+      box-shadow: 0 0 6px rgba(234, 53, 73, 0.9);
+    }
+  }
+
+  .divider {
+    width: 1px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .hint {
+    color: var(--kob-text-dim);
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .pk-turn-chip .hint,
+  .pk-turn-chip .divider {
+    display: none;
+  }
 }
 </style>

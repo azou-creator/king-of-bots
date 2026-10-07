@@ -1,8 +1,8 @@
 <template>
   <div class="content-field">
-    <a-card>
+    <div class="content-card">
       <slot />
-    </a-card>
+    </div>
   </div>
 </template>
 
@@ -10,8 +10,23 @@
 
 <style lang="scss" scoped>
 .content-field {
-  width: 70vw;
-  margin: 0 auto;
-  margin-top: 20px;
+  width: min(1080px, 92vw);
+  margin: 26px auto 32px;
+}
+
+.content-card {
+  background: var(--kob-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--kob-radius-lg);
+  box-shadow: var(--kob-shadow);
+  padding: 24px 28px;
+}
+
+@media (max-width: 640px) {
+  .content-card {
+    padding: 18px 16px;
+  }
 }
 </style>

@@ -1,35 +1,39 @@
 <template>
   <content-field>
+    <div class="page-head">
+      <h2 class="page-title">对局记录</h2>
+      <p class="page-sub">历史对战一览，点击「观看回放」复盘每一场对局</p>
+    </div>
     <a-table
       :columns="columns"
       :data-source="listData"
       :pagination="pagination"
       :loading="loading"
+      row-key="id"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'userA'">
-          <a-typography-text style="margin-right: 12px">
-            {{ record.userA.username }}
-          </a-typography-text>
-          <a-avatar :src="record.userA.avatar" />
+          <div class="player-cell">
+            <a-avatar :src="record.userA.avatar" :size="26" />
+            <span class="player-name">{{ record.userA.username }}</span>
+          </div>
         </template>
         <template v-else-if="column.key === 'userB'">
-          <a-typography-text style="margin-right: 12px">
-            {{ record.userB.username }}
-          </a-typography-text>
-          <a-avatar :src="record.userB.avatar" />
+          <div class="player-cell">
+            <a-avatar :src="record.userB.avatar" :size="26" />
+            <span class="player-name">{{ record.userB.username }}</span>
+          </div>
         </template>
         <template v-else-if="column.key === 'loser'">
-          <span>
-            <a-tag color="green">
-              {{ record.loser === "A" ? "B胜" : "A胜" }}
-            </a-tag>
-          </span>
+          <!-- 胜方阵营着色:A 为蓝方,B 为红方 -->
+          <a-tag :color="record.loser === 'A' ? 'red' : 'blue'">
+            {{ record.loser === "A" ? "B 胜" : "A 胜" }}
+          </a-tag>
         </template>
         <template v-else-if="column.key === 'action'">
-          <span>
-            <a @click="handleWatchVideotape(record.id)">查看录像</a>
-          </span>
+          <a-button type="link" size="small" @click="handleWatchVideotape(record.id)">
+            观看回放
+          </a-button>
         </template>
       </template>
     </a-table>
@@ -37,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { getRecordList } from "@/api/record";
 import ContentField from "@/components/ContentField.vue";
 import { useRouter } from "vue-router";
@@ -86,7 +90,7 @@ const columns = ref([
     key: "createTime",
   },
   {
-    title: "action",
+    title: "操作",
     key: "action",
   },
 ]);
@@ -114,7 +118,7 @@ function handleWatchVideotape(recordId) {
       localStorage.setItem('game', JSON.stringify(game))
       localStorage.setItem('recordLoser', JSON.stringify(record.loser))
       localStorage.setItem('steps', JSON.stringify(steps))
-      
+
       break;
     }
   }
@@ -159,4 +163,14 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.player-name {
+  color: var(--kob-text);
+}
+</style>

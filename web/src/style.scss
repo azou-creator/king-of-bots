@@ -1,0 +1,156 @@
+/* ==========================================================================
+   King Of Bots 全局设计体系
+   主色:翡翠绿(呼应贪吃蛇场地),全站唯一强调色;
+   蓝色 #4d72e6 / 红色 #ea3549 保留为玩家 A / B 的阵营功能色,不作装饰使用。
+   ========================================================================== */
+:root {
+  /* 强调色 */
+  --kob-accent: #22b573;
+  --kob-accent-strong: #1a9e63;
+  --kob-accent-deep: #148550;
+  --kob-accent-soft: rgba(34, 181, 115, 0.16);
+
+  /* 阵营功能色(与游戏内蛇色保持一致) */
+  --kob-a: #4d72e6;
+  --kob-b: #ea3549;
+
+  /* 文字 */
+  --kob-text: #1f2d27;
+  --kob-text-secondary: #5f7169;
+  --kob-text-dim: rgba(255, 255, 255, 0.66);
+
+  /* 面板与阴影 */
+  --kob-panel: rgba(255, 255, 255, 0.9);
+  --kob-glass-dark: rgba(13, 22, 19, 0.82);
+  --kob-border: rgba(31, 45, 39, 0.08);
+  --kob-radius: 14px;
+  --kob-radius-lg: 18px;
+  --kob-shadow: 0 20px 45px -20px rgba(12, 26, 20, 0.45);
+  --kob-shadow-sm: 0 8px 20px -12px rgba(12, 26, 20, 0.35);
+
+  --kob-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei",
+    "Noto Sans SC", sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--kob-font);
+  color: var(--kob-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 列表、表格中的数字使用等宽数字,上下对齐更整齐 */
+.ant-table,
+.ant-list,
+.kob-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 细滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(31, 45, 39, 0.24);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 45, 39, 0.4);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Ant Design Vue 主题校准:把默认蓝统一为主色翡翠绿
+   (antd v3 不支持运行时 token,用 body 前缀提高优先级覆盖编译好的样式)
+   -------------------------------------------------------------------------- */
+body a {
+  color: var(--kob-accent);
+  transition: color 0.2s ease;
+}
+body a:hover {
+  color: var(--kob-accent-strong);
+}
+
+body .ant-btn-primary {
+  background: var(--kob-accent);
+  border-color: var(--kob-accent);
+  box-shadow: 0 6px 16px -8px rgba(34, 181, 115, 0.55);
+}
+body .ant-btn-primary:hover,
+body .ant-btn-primary:focus {
+  background: var(--kob-accent-strong);
+  border-color: var(--kob-accent-strong);
+}
+body .ant-btn-primary:active {
+  background: var(--kob-accent-deep);
+  border-color: var(--kob-accent-deep);
+}
+body .ant-btn-primary:focus {
+  box-shadow: 0 0 0 4px var(--kob-accent-soft);
+}
+
+body .ant-input:focus,
+body .ant-input-focused,
+body .ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  border-color: var(--kob-accent) !important;
+  box-shadow: 0 0 0 3px var(--kob-accent-soft) !important;
+}
+
+body .ant-pagination-item-active {
+  border-color: var(--kob-accent);
+}
+body .ant-pagination-item-active a {
+  color: var(--kob-accent);
+}
+body .ant-pagination-item:hover,
+body .ant-pagination-item-link:hover {
+  border-color: var(--kob-accent);
+}
+body .ant-pagination-item:hover a {
+  color: var(--kob-accent);
+}
+
+body .ant-modal-content {
+  border-radius: var(--kob-radius-lg);
+}
+
+/* 通用页面标题区(排行榜 / 对局记录 / 我的 Bots 等共用) */
+.page-head {
+  margin-bottom: 14px;
+}
+.page-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--kob-text);
+  letter-spacing: 0.2px;
+}
+.page-sub {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--kob-text-secondary);
+}
+
+/* 路由切换过渡 */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}

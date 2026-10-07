@@ -124,47 +124,52 @@ export default class Snake extends GameObject {
     const L = this.gameMap.L;
     const ctx = this.gameMap.ctx;
 
-    ctx.fillStyle = this.color;
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = L * 0.8;
+    ctx.strokeStyle = this.color;
     if (this.status === "dead") {
-      ctx.fillStyle = "white";
-    }
-    for (let cell of this.cells) {
-      ctx.beginPath();
-      ctx.arc(cell.x * L, cell.y * L, (L / 2) * 0.8, 0, 2 * Math.PI, false);
-      ctx.fill();
+      ctx.strokeStyle = "rgba(235, 238, 235, 0.92)";
     }
 
+    // 身体:把所有格子中心连成一条圆头折线,转折处自然圆润
+    ctx.beginPath();
+    let hasSegment = false;
+    ctx.moveTo(this.cells[0].x * L, this.cells[0].y * L);
     for (let i = 1; i < this.cells.length; i++) {
       const a = this.cells[i - 1],
         b = this.cells[i];
       if (Math.abs(a.x - b.x) < this.eps && Math.abs(a.y - b.y) < this.eps)
         continue;
-      if (Math.abs(a.x - b.x) < this.eps) {
-        ctx.fillRect(
-          (a.x - 0.4) * L,
-          Math.min(a.y, b.y) * L,
-          L * 0.8,
-          Math.abs(a.y - b.y) * L
-        );
-      } else {
-        ctx.fillRect(
-          Math.min(a.x, b.x) * L,
-          (a.y - 0.4) * L,
-          Math.abs(a.x - b.x) * L,
-          L * 0.8
-        );
-      }
+      ctx.lineTo(b.x * L, b.y * L);
+      hasSegment = true;
+    }
+    if (hasSegment) {
+      ctx.stroke();
+    } else {
+      // 只有一颗头时的圆形
+      ctx.beginPath();
+      ctx.arc(this.cells[0].x * L, this.cells[0].y * L, L * 0.4, 0, 2 * Math.PI);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.fill();
     }
 
-    ctx.fillStyle = "black";
+    // 眼睛:白眼球 + 黑瞳孔,朝向随移动方向
     for (let i = 0; i < 2; i++) {
       let eye_x =
         (this.cells[0].x + this.eye_dx[this.eye_direction][i] * 0.2) * L;
       let eye_y =
         (this.cells[0].y + this.eye_dy[this.eye_direction][i] * 0.2) * L;
       ctx.beginPath();
-      ctx.arc(eye_x, eye_y, L * 0.1, 0, Math.PI * 2, false);
+      ctx.fillStyle = "#ffffff";
+      ctx.arc(eye_x, eye_y, L * 0.16, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = "#142019";
+      ctx.arc(eye_x, eye_y, L * 0.09, 0, Math.PI * 2, false);
       ctx.fill();
     }
+    ctx.restore();
   }
 }

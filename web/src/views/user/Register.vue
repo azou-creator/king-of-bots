@@ -1,62 +1,94 @@
 <template>
-  <content-field>
-    <a-form
-        class="form"
-        :model="data"
-        autocomplete="off"
-        @submit.prevent="submit"
-        :label-col="{ span: 6 }"
-        :wrapper-col="{ span: 18 }"
-    >
-      <a-form-item
-          label="用户名"
-          :rules="[{ required: true, message: 'Please input your username!' }]"
-      >
-        <a-input
-            v-model:value="data.username"
-            type="text"
-            class="form-control"
-            id="username"
-            placeholder="请输入用户名"
+  <div class="auth-page">
+    <div class="auth-card">
+      <svg class="auth-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path
+          d="M7 23c0-5.5 4.5-5.5 9-5.5s9 0 9-5.5-4.5-5.5-9-5.5"
+          stroke="currentColor"
+          stroke-width="3.2"
+          stroke-linecap="round"
         />
-      </a-form-item>
-      <a-form-item
-          label="密码"
-          :rules="[{ required: true, message: 'Please input your username!' }]"
-      >
-        <a-input
-            v-model:value="data.password"
-            type="password"
-            class="form-control"
-            id="password"
-            placeholder="请输入密码"
-        />
-      </a-form-item>
+        <circle cx="7.6" cy="23" r="2.8" fill="currentColor" />
+      </svg>
+      <h2 class="auth-title">注册 King Of Bots</h2>
+      <p class="auth-sub">创建账号，开启你的对战之旅</p>
 
-      <a-form-item
-          label="确认密码"
-          :rules="[{ required: true, message: 'Please input your username!' }]"
+      <a-form
+        class="auth-form"
+        :model="data"
+        layout="vertical"
+        autocomplete="off"
+        @finish="submit"
       >
-        <a-input
+        <a-form-item
+          label="用户名"
+          name="username"
+          :rules="[{ required: true, message: '请输入用户名' }]"
+        >
+          <a-input
+            v-model:value="data.username"
+            placeholder="请输入用户名"
+            size="large"
+          />
+        </a-form-item>
+        <a-form-item
+          label="密码"
+          name="password"
+          :rules="[{ required: true, message: '请输入密码' }]"
+        >
+          <a-input-password
+            v-model:value="data.password"
+            placeholder="请输入密码"
+            size="large"
+          />
+        </a-form-item>
+        <a-form-item
+          label="确认密码"
+          name="confirmPassword"
+          :rules="[
+            { required: true, message: '请再次输入密码' },
+            { validator: validateConfirm },
+          ]"
+        >
+          <a-input-password
             v-model:value="data.confirmPassword"
-            type="password"
-            class="form-control"
-            id="confirmpassword"
             placeholder="请再次输入密码"
+            size="large"
+          />
+        </a-form-item>
+
+        <a-alert
+          v-if="errorMessage"
+          type="error"
+          :message="errorMessage"
+          show-icon
+          class="auth-error"
         />
-      </a-form-item>
-      <a-button style="width: 100%" type="primary" html-type="submit">
-        注册
-      </a-button>
-    </a-form>
-  </content-field>
+
+        <a-button
+          type="primary"
+          html-type="submit"
+          block
+          size="large"
+          class="auth-submit"
+        >
+          注 册
+        </a-button>
+      </a-form>
+
+      <div class="auth-footer">
+        已有账号？<Link to="/login">直接登录</Link>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import ContentField from "@/components/ContentField.vue";
-import {reactive, ref} from "vue";
-import {register} from "@/api/auth";
-import router from "@/router/routes.js";
+import Link from "@/components/Link.vue";
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { message } from "ant-design-vue";
+import { register } from "@/api/auth";
 
 const data = reactive({
   username: "",
@@ -64,23 +96,86 @@ const data = reactive({
   confirmPassword: "",
 });
 const errorMessage = ref("");
+const router = useRouter();
 
+const validateConfirm = async (_rule, value) => {
+  if (value && value !== data.password) {
+    throw new Error("两次输入的密码不一致");
+  }
+};
+
+// @finish 在表单校验通过后才会触发
 const submit = () => {
+  errorMessage.value = "";
   register(data)
-      .then((res) => {
-        console.log(res);
-        router.push({name: "Login"});
-      })
-      .catch((e) => {
-        console.log(e.response);
-        errorMessage.value = e.response.data.message;
-      });
+    .then(() => {
+      message.success("注册成功，请登录");
+      router.push({ name: "Login" });
+    })
+    .catch((e) => {
+      // 失败响应经 http.js 拦截器转为 Error(message)，而非 axios error
+      errorMessage.value = e?.message || "注册失败";
+    });
 };
 </script>
 
 <style lang="scss" scoped>
-.ant-form {
-  width: 400px;
-  margin: 0 auto;
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 5vh 16px 40px;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: var(--kob-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 20px;
+  box-shadow: var(--kob-shadow);
+  padding: 34px 34px 26px;
+  text-align: center;
+}
+
+.auth-mark {
+  width: 40px;
+  height: 40px;
+  color: var(--kob-accent);
+}
+
+.auth-title {
+  margin: 12px 0 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--kob-text);
+}
+
+.auth-sub {
+  margin: 6px 0 24px;
+  color: var(--kob-text-secondary);
+  font-size: 0.92rem;
+}
+
+.auth-form {
+  text-align: left;
+}
+
+.auth-error {
+  margin-bottom: 20px;
+}
+
+.auth-submit {
+  margin-top: 4px;
+  font-weight: 600;
+  letter-spacing: 4px;
+}
+
+.auth-footer {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--kob-border);
+  color: var(--kob-text-secondary);
+  font-size: 0.9rem;
 }
 </style>
