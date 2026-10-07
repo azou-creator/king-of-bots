@@ -6,16 +6,26 @@
 
 <script setup>
 import GameMap from "@/script/GameMap.js";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useStore } from "vuex";
 
 const canvas = ref(null);
 const parent = ref(null);
 const store = useStore();
+let gameMap = null;
 
 onMounted(() => {
-  let gameMap = new GameMap(canvas.value.getContext("2d"), parent.value);
+  gameMap = new GameMap(canvas.value.getContext("2d"), parent.value);
   store.commit("updateGameObject", gameMap);
+});
+
+onUnmounted(() => {
+  // 从全局渲染池移除并触发 onDestory(清理回放定时器), 防止旧实例残留
+  if (gameMap) {
+    gameMap.destroy();
+    gameMap = null;
+  }
+  store.commit("updateGameObject", null);
 });
 </script>
 

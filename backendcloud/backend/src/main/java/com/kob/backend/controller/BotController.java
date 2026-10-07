@@ -33,14 +33,14 @@ public class BotController {
     }
 
     @GetMapping("/{id}")
-    public R<Bot> get(@PathVariable Long id) {
+    public R<Bot> get(@PathVariable("id") Long id) {
         Bot bot = botService.getById(id);
         return R.ok(bot);
     }
 
 
     @DeleteMapping("/remove/{id}")
-    public R<String> remove(@PathVariable Long id) {
+    public R<String> remove(@PathVariable("id") Long id) {
         User user = SecurityUtils.getUser();
         Bot bot = botService.getById(id);
         if (!ObjectUtil.equal(bot.getUserId(), user.getId())) {

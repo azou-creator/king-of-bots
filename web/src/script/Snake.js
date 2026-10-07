@@ -18,6 +18,10 @@ export default class Snake extends GameObject {
     this.direction = -1; // 0: up, 1: right, 2: down, 3: left -1:没有方向
     this.status = "idle"; // idle静止, moving移动, dead死亡
 
+    // 待处理方向队列: 渲染冻结(浏览器后台)期间后端 move 事件仍会到达,
+    // 直接覆盖 this.direction 会丢步导致轨迹错位, 因此一律排队逐个消费
+    this.pending_directions = [];
+
     this.next_cell = null; // 下一个要走的格子
 
     // 偏移量
@@ -98,7 +102,8 @@ export default class Snake extends GameObject {
   }
 
   set_direction(d) {
-    this.direction = d;
+    // 一律入队, 由 update() 在安全时机逐个消费
+    this.pending_directions.push(d);
   }
 
   set_status(status) {
@@ -114,6 +119,10 @@ export default class Snake extends GameObject {
   }
 
   update() {
+    // 空闲且有排队的方向: 取出作为本回合方向(下一帧 check_ready 通过后开始移动)
+    if (this.status === "idle" && this.direction === -1 && this.pending_directions.length > 0) {
+      this.direction = this.pending_directions.shift();
+    }
     if (this.status === "moving") {
       this.move();
     }

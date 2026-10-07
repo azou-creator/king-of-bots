@@ -2,7 +2,6 @@ import GameObject from "./GameObject.js";
 import Snake from "./Snake.js";
 import Wall from "./Wall.js";
 import { store } from "@/store";
-import { useRouter } from "vue-router";
 
 // 游戏地图对象
 export default class GameMap extends GameObject {
@@ -32,31 +31,25 @@ export default class GameMap extends GameObject {
   }
 
   add_event_listener() {
-    // 判断是否是录像
-    const isRecording = () => {
-      const router = useRouter();
-      return (
-        router.currentRoute.value.path.includes("videotape") ||
-        store.state.record.is_recording
-      );
-    };
-    if (isRecording()) {
+    // 判断是否是录像(RecordVideotape 挂载时已把本局数据全部写入 store)
+    if (store.state.record.is_recording) {
       const [snake0, snake1] = this.snakes;
-      
-      const a_steps = store.state.record.a_steps || JSON.parse(localStorage.getItem('steps')).a_steps;
-      const b_steps = store.state.record.b_steps || JSON.parse(localStorage.getItem('steps')).b_steps;
-      
-      const loser = (store.state.record.record_loser === 'none' ? false : store.state.record.record_loser ) || JSON.parse(localStorage.getItem('recordLoser'));
-      
+
+      const a_steps = store.state.record.a_steps;
+      const b_steps = store.state.record.b_steps;
+      const loser = store.state.record.record_loser;
+
       let k = 0;
-      const timer = setInterval(() => {
+      // 定时器挂在实例上, 组件卸载销毁 GameMap 时由 onDestory 清理
+      this.replay_timer = setInterval(() => {
         if (k >= a_steps.length - 1) {
           if (loser == "all" || loser == "A") {
             snake0.status = "dead";
           } else if (loser == "all" || loser == "B") {
             snake1.status = "dead";
           }
-          clearInterval(timer);
+          clearInterval(this.replay_timer);
+          this.replay_timer = null;
         } else {
           snake0.set_direction(parseInt(a_steps[k]));
           snake1.set_direction(parseInt(b_steps[k]));
@@ -98,6 +91,14 @@ export default class GameMap extends GameObject {
 
   start() {
     this.create_wall();
+  }
+
+  onDestory() {
+    // 离开回放页时清理残留的回放驱动定时器(否则会持续给旧蛇喂步)
+    if (this.replay_timer) {
+      clearInterval(this.replay_timer);
+      this.replay_timer = null;
+    }
   }
 
   check_ready() {
@@ -165,9 +166,7 @@ export default class GameMap extends GameObject {
 
   create_wall() {
     let g = store.state.pk.map;
-    if (!g)
-      store.commit("updateGame", JSON.parse(localStorage.getItem("game")));
-    g = store.state.pk.map;
+    if (!g) return; // 地图数据未就位(异常场景), 画空场不崩溃
     if (g[11][1] == 1) g[11][1] = 0;
     for (let i = 0; i < this.rows; i++)
       for (let j = 0; j < this.cols; j++)

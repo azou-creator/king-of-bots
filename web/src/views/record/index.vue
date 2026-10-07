@@ -96,52 +96,13 @@ const columns = ref([
 ]);
 
 function handleWatchVideotape(recordId) {
-  store.commit("updateIsRecording", true);
-  for (let record of listData.value) {
-    if (record.id === recordId) {
-      let game = {
-        map: stringTo2D(record.map),
-        a_id: record.aId,
-        b_id: record.bId,
-        a_sx: record.aSx,
-        a_sy: record.aSy,
-        b_sx: record.bSx,
-        b_sy: record.bSy,
-      }
-      store.commit("updateGame", game);
-      store.commit("updateRecordLoser", record.loser);
-      let steps = {
-        a_steps: record.aSteps,
-        b_steps: record.bSteps,
-      }
-      store.commit("updateSteps", steps);
-      localStorage.setItem('game', JSON.stringify(game))
-      localStorage.setItem('recordLoser', JSON.stringify(record.loser))
-      localStorage.setItem('steps', JSON.stringify(steps))
-
-      break;
-    }
-  }
-
+  // 数据由回放页按 recordId 从后端加载, 这里只负责跳转
   router.push({
     name: "videotape",
     params: {
       recordId,
     },
   });
-}
-
-function stringTo2D(str) {
-  let g = [];
-  for (let i = 0, k = 0; i < 13; i++) {
-    let line = [];
-    for (let j = 0; j < 14; j++, k++) {
-      if (str[k] === "0") line.push(0);
-      else line.push(1);
-    }
-    g.push(line);
-  }
-  return g;
 }
 
 async function getRecordListData({ page, limit }) {

@@ -7,3 +7,10 @@ export function getRecordList(params) {
     method: "get",
   });
 }
+
+export function getRecord(id) {
+  return request({
+    url: "/record/" + id,
+    method: "get",
+  });
+}

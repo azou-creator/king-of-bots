@@ -29,6 +29,17 @@ public class RecordServiceImpl implements IRecordService {
     private RecordRepository recordRepository;
 
     @Override
+    public RecordDTO getById(Long id) {
+        Record record = recordRepository.findById(id).orElse(null);
+        if (record == null) return null;
+        // 返回 RecordDTO 保证字段键名(aSteps 等)与列表接口一致, 实体直接序列化的键名不可靠
+        RecordDTO recordDTO = BeanUtil.copyProperties(record, RecordDTO.class);
+        recordDTO.setUserA(userService.getById(record.getAId()));
+        recordDTO.setUserB(userService.getById(record.getBId()));
+        return recordDTO;
+    }
+
+    @Override
     public JSONObject pageList(Map<String, Object> params) {
         int page = Integer.parseInt(params.getOrDefault("page", 1).toString());
         int size = Integer.parseInt(params.getOrDefault("size", 10).toString());

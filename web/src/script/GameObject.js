@@ -37,7 +37,9 @@ const step = (timestamp) => {
       obj.start()
       obj.hasStarted = true
     }
-    obj.timedelta = timestamp - last_timestamp
+    // 浏览器后台会冻结 requestAnimationFrame, 恢复后与 last_timestamp 的差值
+    // 可能长达数分钟; 不钳制的话 Snake.move 一步会把蛇头甩出棋盘外
+    obj.timedelta = Math.min(timestamp - last_timestamp, 100)
     obj.update()
   }
   last_timestamp = timestamp
