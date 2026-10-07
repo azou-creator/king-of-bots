@@ -9,6 +9,14 @@
       <span class="dot" :class="isBlue ? 'blue' : 'red'"></span>
       <span>{{ isBlue ? "你是蓝方" : "你是红方" }}</span>
       <span class="divider"></span>
+      <span
+        class="round-timer"
+        v-if="countdown > 0"
+        :class="{ urgent: countdown <= 2 }"
+      >
+        {{ countdown }}s
+      </span>
+      <span class="divider"></span>
       <span class="hint">WASD / 方向键 控制移动</span>
     </div>
   </div>
@@ -26,6 +34,7 @@ import {
   MATCH_SUCCESS,
   MOVE,
   RESULT,
+  STEP_COUNTDOWN_SECONDS,
 } from "@/utils/constant";
 
 const store = useStore();
@@ -35,6 +44,29 @@ let socket = null;
 const isBlue = computed(
   () => parseInt(store.state.user.id) === store.state.pk.a_id
 );
+
+const countdown = computed(() => store.state.pk.countdown);
+
+// ---------- 回合倒计时(对齐后端 Game.nextStep 的 5 秒判负窗口) ----------
+let countdownTimer = null;
+
+const startRoundCountdown = () => {
+  stopRoundCountdown();
+  store.commit("updateCountdown", STEP_COUNTDOWN_SECONDS);
+  countdownTimer = setInterval(() => {
+    const next = store.state.pk.countdown - 1;
+    store.commit("updateCountdown", Math.max(next, 0));
+    if (next <= 0) stopRoundCountdown(); // 归零后等待后端超时判定
+  }, 1000);
+};
+
+const stopRoundCountdown = () => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  store.commit("updateCountdown", 0);
+};
 
 store.commit("updateLoser", "none");
 
@@ -61,12 +93,15 @@ onMounted(() => {
       });
       store.commit("updateStatus", "playing");
       store.commit("updateGame", game);
+      startRoundCountdown(); // 第一回合窗口开始
     } else if (event === MOVE) {
       const gameObject = store.state.pk.gameObject;
       const [snake0, snake1] = gameObject.snakes;
       snake0.set_direction(a_dir);
       snake1.set_direction(b_dir);
+      startRoundCountdown(); // 双方已交步, 下一回合窗口重置
     } else if (event === RESULT) {
+      stopRoundCountdown(); // 对局结束
       const [snake0, snake1] = store.state.pk.gameObject.snakes;
       if (loser === "all" || loser === "A") {
         snake0.set_status("dead");
@@ -85,6 +120,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  stopRoundCountdown();
   if (socket) {
     socket.onclose = null; // 卸载触发的 close 不再重置 store 状态
     socket.close();
@@ -137,6 +173,20 @@ onUnmounted(() => {
     background: rgba(255, 255, 255, 0.18);
   }
 
+  .round-timer {
+    min-width: 2.4em;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.02rem;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+
+    &.urgent {
+      color: #ff5c5c;
+      animation: timer-pulse 1s ease-in-out infinite;
+    }
+  }
+
   .hint {
     color: var(--kob-text-dim);
     font-size: 0.82rem;
@@ -147,6 +197,16 @@ onUnmounted(() => {
   .pk-turn-chip .hint,
   .pk-turn-chip .divider {
     display: none;
+  }
+}
+
+@keyframes timer-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
   }
 }
 </style>

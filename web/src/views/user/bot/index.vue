@@ -19,6 +19,7 @@
           <a-button type="primary" @click="openCreate">+ 创建 Bot</a-button>
         </div>
         <a-table
+          class="bots-table"
           :data-source="botList"
           :columns="columns"
           :loading="loading"
@@ -88,25 +89,31 @@ const columns = ref([
     title: "名称",
     dataIndex: "title",
     key: "title",
+    width: 180,
   },
   {
     title: "描述",
     dataIndex: "description",
     key: "description",
+    ellipsis: true,
   },
   {
     title: "评分",
     dataIndex: "rating",
     key: "rating",
+    width: 90,
+    align: "center",
   },
   {
     title: "创建时间",
     dataIndex: "createTime",
     key: "createTime",
+    width: 175,
   },
   {
     title: "操作",
     key: "action",
+    width: 130,
   },
 ]);
 
@@ -264,6 +271,29 @@ onMounted(() => {
 .bot-title {
   font-weight: 600;
   color: var(--kob-text);
+}
+
+/* 固定布局让列宽声明生效:描述列吃剩余空间并省略,操作列不再被挤压换行 */
+:deep(.bots-table .ant-table) {
+  table-layout: fixed;
+}
+
+:deep(.bots-table .ant-table-cell) {
+  vertical-align: middle;
+}
+
+:deep(.bots-table td:last-child) {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  /* 窄屏放开固定布局与禁换行,允许操作列竖排 */
+  :deep(.bots-table .ant-table) {
+    table-layout: auto;
+  }
+  :deep(.bots-table td:last-child) {
+    white-space: normal;
+  }
 }
 
 .bot-desc {

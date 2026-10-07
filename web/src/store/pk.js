@@ -13,6 +13,7 @@ export default {
     b_sy: 0,
     gameObject: null,
     loser: "none",
+    countdown: 0, // 当前回合剩余秒数(0 = 不显示)
   },
   getters: {},
   mutations: {
@@ -40,6 +41,9 @@ export default {
     },
     updateLoser(state, loser) {
       state.loser = loser;
+    },
+    updateCountdown(state, seconds) {
+      state.countdown = seconds;
     },
   },
   actions: {},

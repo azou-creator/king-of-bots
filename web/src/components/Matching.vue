@@ -37,6 +37,11 @@
       </div>
 
       <div class="match-action">
+        <transition name="fade">
+          <div class="match-timer" v-if="isMatching">
+            正在匹配 <span class="timer-num">{{ timerText }}</span>
+          </div>
+        </transition>
         <a-button
           type="primary"
           size="large"
@@ -53,7 +58,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, onUnmounted, ref, computed, watch } from "vue";
 import { useStore } from "vuex";
 import { getBotList } from "@/api/bot";
 import { START_MATCH, STOP_MATCH, MATCH_SUCCESS } from "@/utils/constant";
@@ -81,6 +86,7 @@ const click_match_btn = () => {
   errorMessage.value = "";
   if (!isMatching.value) {
     isMatching.value = true;
+    startTimer();
     socket.send(
       JSON.stringify({
         event: START_MATCH,
@@ -89,6 +95,7 @@ const click_match_btn = () => {
     );
   } else {
     isMatching.value = false;
+    stopTimer();
     socket.send(
       JSON.stringify({
         event: STOP_MATCH,
@@ -96,6 +103,47 @@ const click_match_btn = () => {
     );
   }
 };
+
+// ---------- 匹配计时器 ----------
+const matchedSeconds = ref(0);
+let matchTimer = null;
+
+const timerText = computed(() => {
+  const s = matchedSeconds.value;
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+});
+
+const startTimer = () => {
+  stopTimer();
+  matchedSeconds.value = 0;
+  matchTimer = setInterval(() => {
+    matchedSeconds.value++;
+  }, 1000);
+};
+
+const stopTimer = () => {
+  if (matchTimer) {
+    clearInterval(matchTimer);
+    matchTimer = null;
+  }
+};
+
+// 连接断开时匹配已失效, 停止计时避免"假匹配中"继续跳秒
+watch(
+  () => store.state.pk.socket,
+  (socket) => {
+    if (!socket && isMatching.value) {
+      isMatching.value = false;
+      stopTimer();
+    }
+  }
+);
+
+onUnmounted(() => {
+  stopTimer(); // 匹配成功进入对战页/离开页面时清理定时器
+});
 
 const refresh_bots = async () => {
   try {
@@ -179,6 +227,36 @@ onMounted(() => {
   background: linear-gradient(135deg, var(--kob-a) 0%, var(--kob-b) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 12px 24px -12px rgba(0, 0, 0, 0.55);
+}
+
+.match-timer {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  letter-spacing: 0.5px;
+}
+
+.timer-num {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 0 14px rgba(82, 196, 26, 0.55);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .match-config {
