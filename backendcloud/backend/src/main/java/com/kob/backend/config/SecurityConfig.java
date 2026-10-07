@@ -77,6 +77,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/account/token",
                                 "/auth/account/register",
+                                // 头像为公开展示的静态图片, <img> 标签不带 JWT
+                                "/avatar/**",
                                 "/websocket/**").permitAll()
                         .requestMatchers(
                                 "/startGame/start","/receiveBotMove/move").access(ipAddressAuthorizationManager)

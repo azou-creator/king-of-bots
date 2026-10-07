@@ -2,8 +2,8 @@ package com.kob.backend.service;
 
 import com.kob.backend.dto.UserParam;
 import com.kob.backend.entity.User;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Map;
 
 public interface IUserService{
@@ -16,4 +16,6 @@ public interface IUserService{
     User info(Long id) ;
 
     User getById(Long id) ;
+
+    String updateAvatar(Long userId, MultipartFile file) ;
 }

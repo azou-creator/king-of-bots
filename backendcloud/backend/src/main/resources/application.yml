@@ -5,7 +5,14 @@ jwt:
   key: SDFGjhdsfalshdfHFdsjkdsfds121232131afasdfac
   expire: 604800000   # 7天
 
+avatar:
+  dir: ${user.home}/kob/avatars
+
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   thymeleaf:
     cache: false
   datasource:

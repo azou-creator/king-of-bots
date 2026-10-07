@@ -26,6 +26,9 @@
             <a-menu-item key="bots">
               <Link class="dropdown-item" to="/bot">我的 Bots</Link>
             </a-menu-item>
+            <a-menu-item key="avatar" @click="triggerAvatarUpload">
+              更换头像
+            </a-menu-item>
             <a-menu-divider />
             <a-menu-item key="logout" @click="logout">退出登录</a-menu-item>
           </a-menu>
@@ -40,16 +43,29 @@
         <a-button size="small" type="primary" class="nav-register">注册</a-button>
       </Link>
     </template>
+    <input
+      ref="avatarInput"
+      type="file"
+      accept="image/jpeg,image/png,image/webp,image/gif"
+      style="display: none"
+      @change="handleAvatarChange"
+    />
   </nav>
 </template>
 
 <script setup>
 import Link from "@/components/Link.vue";
+import { ref } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
+import { message } from "ant-design-vue";
+import { uploadAvatar } from "@/api/auth";
+import { saveUser } from "@/utils/token";
 
 const store = useStore();
 const route = useRoute();
+const avatarInput = ref(null);
+const uploadingAvatar = ref(false);
 
 const mainLinks = [
   { path: "/pk", label: "对战" },
@@ -63,6 +79,46 @@ const isActive = (path) => {
     return route.path.startsWith("/record") || route.path.startsWith("/videotape");
   }
   return route.path.startsWith(path);
+};
+
+const MAX_AVATAR_MB = 5;
+
+const triggerAvatarUpload = () => {
+  avatarInput.value?.click();
+};
+
+const handleAvatarChange = async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = ""; // 允许重复选择同一文件
+  if (!file) return;
+  if (file.size > MAX_AVATAR_MB * 1024 * 1024) {
+    message.error(`头像图片不能超过 ${MAX_AVATAR_MB}MB`);
+    return;
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  uploadingAvatar.value = true;
+  try {
+    const res = await uploadAvatar(formData);
+    if (res.status === 200) {
+      const avatar = res.data;
+      store.commit("M_user", {
+        id: store.state.user.id,
+        username: store.state.user.username,
+        avatar,
+      });
+      saveUser({
+        id: store.state.user.id,
+        username: store.state.user.username,
+        avatar,
+      });
+      message.success("头像已更新");
+    }
+  } catch (err) {
+    message.error(err?.message || "头像上传失败");
+  } finally {
+    uploadingAvatar.value = false;
+  }
 };
 
 const logout = () => {

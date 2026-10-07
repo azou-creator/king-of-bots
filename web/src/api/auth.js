@@ -22,3 +22,12 @@ export function getInfo(id) {
     method: "get",
   });
 }
+
+export function uploadAvatar(formData) {
+  return request({
+    url: "auth/avatar",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
