@@ -25,7 +25,8 @@ public class MatchingPool extends Thread {
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    private static final String STARTGAMEURL = "http://localhost:8080/startGame/start";
+    // 显式 IPv4：localhost 在部分环境解析为 ::1，会被主服务的 IP 白名单拒绝
+    private static final String STARTGAMEURL = "http://127.0.0.1:8080/startGame/start";
 
     private static RestTemplate restTemplate;
 
@@ -37,6 +38,8 @@ public class MatchingPool extends Thread {
     public void addPlayer(Integer userId, Integer rating, Integer botId) {
         lock.lock();
         try {
+            // 同一玩家重复请求只保留一条，防止"自己和自己"匹配
+            players.removeIf(player -> player.getUserId().equals(userId));
             players.add(new Player(userId, rating, 0, botId));
         } finally {
             lock.unlock();

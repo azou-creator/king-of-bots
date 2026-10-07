@@ -25,7 +25,8 @@ public class MatchingController {
     }
 
 
-    @DeleteMapping("/player/remove")
+    // 调用方（WebSocketServer.stopMatching）发的是 POST，用 DELETE 会导致 403/405
+    @PostMapping("/player/remove")
     public String removePlayer(@RequestParam MultiValueMap<String, String> map) {
         Integer userId = Integer.valueOf(Objects.requireNonNull(map.getFirst("userId")));
         return matchingService.removePlayer(userId);

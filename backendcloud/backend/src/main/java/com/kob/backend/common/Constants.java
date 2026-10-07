@@ -62,6 +62,11 @@ public class Constants {
     public static final String JWT_AVATAR = "avatar";
 
 
+    /**
+     * 新用户默认天梯分
+     */
+    public static final Integer DEFAULT_RATING = 1500;
+
     public static final String START_MATCH = "start_match";
 
     public static final String STOP_MATCH = "stop_match";

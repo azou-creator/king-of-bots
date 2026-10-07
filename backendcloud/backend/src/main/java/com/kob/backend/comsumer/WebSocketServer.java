@@ -65,7 +65,8 @@ public class WebSocketServer {
         WebSocketServer.restTemplate = restTemplate;
     }
 
-    private final String url = "http://localhost:8081";
+    // 显式 IPv4：localhost 在部分环境解析为 ::1，会被匹配系统的 IP 白名单拒绝
+    private final String url = "http://127.0.0.1:8081";
 
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) throws IOException {
@@ -88,6 +89,14 @@ public class WebSocketServer {
         System.out.println("关闭连接");
         if (this.user != null) {
             users.remove(this.user.getId());
+            // 断线时把玩家从匹配池移除，防止残留匹配（否则重连后再匹配会和自己配对）
+            try {
+                MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+                data.add("userId", this.user.getId().toString());
+                restTemplate.postForObject(url + "/matching/player/remove", data, String.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 
@@ -193,13 +202,20 @@ public class WebSocketServer {
      * 向匹配服务器发送匹配请求，添加一名玩家
      */
     private void startMatching(Integer botId) {
-        String route = "/matching/player/add";
-        MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
-        data.add("userId", this.user.getId().toString());
-        data.add("rating", this.user.getRating().toString());
-        data.add("botId", botId.toString());
-        String resp = restTemplate.postForObject(url + route, data, String.class);
-        JSONObject respData = JSONUtil.toBean(resp, JSONObject.class);
+        try {
+            // 先清掉队列中可能残留的同 ID 请求，防止把自己匹配到自己
+            stopMatching();
+            String route = "/matching/player/add";
+            MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+            data.add("userId", this.user.getId().toString());
+            // rating 可能为空（历史遗留数据），兜底默认分
+            data.add("rating", String.valueOf(ObjectUtil.defaultIfNull(this.user.getRating(), 1500)));
+            data.add("botId", String.valueOf(ObjectUtil.defaultIfNull(botId, -1)));
+            restTemplate.postForObject(url + route, data, String.class);
+        } catch (Exception e) {
+            // 匹配服务不可用等情况只记录日志，不能让异常冒泡导致 WebSocket 连接被关闭
+            log.error("startMatching failed: ", e);
+        }
     }
 
     /**
@@ -209,10 +225,11 @@ public class WebSocketServer {
         String route = "/matching/player/remove";
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.add("userId", this.user.getId().toString());
-        String resp = restTemplate.postForObject(url + route, data, String.class);
-
-        JSONObject respData = JSONUtil.toBean(resp, JSONObject.class);
-
+        try {
+            restTemplate.postForObject(url + route, data, String.class);
+        } catch (Exception e) {
+            log.error("stopMatching failed: ", e);
+        }
     }
 
 }

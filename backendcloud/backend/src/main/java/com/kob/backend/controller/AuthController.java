@@ -2,6 +2,7 @@ package com.kob.backend.controller;
 
 import com.kob.backend.common.R;
 import com.kob.backend.dto.AddValid;
+import com.kob.backend.dto.LoginValid;
 import com.kob.backend.dto.UserParam;
 import com.kob.backend.entity.User;
 import com.kob.backend.service.serviceImpl.UserServiceImpl;
@@ -19,7 +20,7 @@ public class AuthController {
     private UserServiceImpl userService;
 
     @PostMapping("/account/token")
-    public R<Map<String, String>> login(@RequestBody UserParam userParam) {
+    public R<Map<String, String>> login(@Validated(LoginValid.class) @RequestBody UserParam userParam) {
 
         Map<String, String> login = userService.login(userParam);
         return R.ok(login);
